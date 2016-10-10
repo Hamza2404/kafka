@@ -38,7 +38,7 @@ import static org.junit.Assert.fail;
 
 public class FileRecordsTest {
 
-    private byte[][] values = new byte[][]{
+    private byte[][] values = new byte[][] {
             "abcd".getBytes(),
             "efgh".getBytes(),
             "ijkl".getBytes()

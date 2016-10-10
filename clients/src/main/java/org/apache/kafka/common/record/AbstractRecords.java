@@ -82,7 +82,7 @@ public abstract class AbstractRecords implements Records {
         return records;
     }
 
-    public Iterator<LogRecord> recordsIterator() {
+    private Iterator<LogRecord> recordsIterator() {
         return new AbstractIterator<LogRecord>() {
             private final Iterator<? extends LogEntry> entries = entries().iterator();
             private Iterator<LogRecord> records;
@@ -101,7 +101,6 @@ public abstract class AbstractRecords implements Records {
             }
         };
     }
-
 
     public static int estimatedSize(CompressionType compressionType, Iterable<LogEntry> entries) {
         int size = 0;

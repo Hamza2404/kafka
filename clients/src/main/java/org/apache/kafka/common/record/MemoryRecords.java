@@ -115,7 +115,7 @@ public class MemoryRecords extends AbstractRecords {
     }
 
     private static FilterResult filterTo(Iterable<LogEntry.ShallowLogEntry> fromShallowEntries, LogRecordFilter filter,
-                                         ByteBuffer destinationBuffer) {
+                                       ByteBuffer destinationBuffer) {
         long firstOffset = -1;
         long maxTimestamp = Record.NO_TIMESTAMP;
         long maxOffset = -1L;
@@ -125,7 +125,7 @@ public class MemoryRecords extends AbstractRecords {
         int messagesRetained = 0;
         int bytesRetained = 0;
 
-       for (LogEntry.ShallowLogEntry entry : fromShallowEntries) {
+        for (LogEntry.ShallowLogEntry entry : fromShallowEntries) {
             bytesRead += entry.sizeInBytes();
 
             // We use the absolute offset to decide whether to retain the message or not Due KAFKA-4298, we have to

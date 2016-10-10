@@ -117,6 +117,70 @@ class LogTest extends JUnitSuite {
     assertEquals("Appending an empty message set should not roll log even if sufficient time has passed.", numSegments, log.numberOfSegments)
   }
 
+  @Test(expected = classOf[InvalidSequenceNumberException])
+  def testNonSequentialAppend(): Unit = {
+    val logProps = new Properties()
+
+    // create a log
+    val log = new Log(logDir,
+      LogConfig(logProps),
+      recoveryPoint = 0L,
+      scheduler = time.scheduler,
+      time = time)
+
+    val pid = 1L
+    val epoch: Short = 0
+
+    val records = TestUtils.records(List(("key".getBytes, "value".getBytes, 1L)), pid = pid, epoch = epoch, sequence = 0)
+    log.append(records, assignOffsets = true)
+
+    val nextRecords = TestUtils.records(List(("key".getBytes, "value".getBytes, 1L)), pid = pid, epoch = epoch, sequence = 2)
+    log.append(nextRecords, assignOffsets = true)
+  }
+
+  @Test(expected = classOf[DuplicateSequenceNumberException])
+  def testDuplicateAppend(): Unit = {
+    val logProps = new Properties()
+
+    // create a log
+    val log = new Log(logDir,
+      LogConfig(logProps),
+      recoveryPoint = 0L,
+      scheduler = time.scheduler,
+      time = time)
+
+    val pid = 1L
+    val epoch: Short = 0
+
+    val records = TestUtils.records(List(("key".getBytes, "value".getBytes, 1L)), pid = pid, epoch = epoch, sequence = 0)
+    log.append(records, assignOffsets = true)
+
+    val nextRecords = TestUtils.records(List(("key".getBytes, "value".getBytes, 1L)), pid = pid, epoch = epoch, sequence = 0)
+    log.append(nextRecords, assignOffsets = true)
+  }
+
+  @Test(expected = classOf[ProducerFencedException])
+  def testOldProducerEpoch(): Unit = {
+    val logProps = new Properties()
+
+    // create a log
+    val log = new Log(logDir,
+      LogConfig(logProps),
+      recoveryPoint = 0L,
+      scheduler = time.scheduler,
+      time = time)
+
+    val pid = 1L
+    val newEpoch: Short = 1
+    val oldEpoch: Short = 0
+
+    val records = TestUtils.records(List(("key".getBytes, "value".getBytes, 1L)), pid = pid, epoch = newEpoch, sequence = 0)
+    log.append(records, assignOffsets = true)
+
+    val nextRecords = TestUtils.records(List(("key".getBytes, "value".getBytes, 1L)), pid = pid, epoch = oldEpoch, sequence = 0)
+    log.append(nextRecords, assignOffsets = true)
+  }
+
   /**
    * Test for jitter s for time based log roll. This test appends messages then changes the time
    * using the mock clock to force the log to roll and checks the number of segments.
@@ -276,9 +340,8 @@ class LogTest extends JUnitSuite {
         assertEquals("Message should match appended.", records(idx), read.record)
       }
 
-      assertEquals(Seq.empty, log.read(i, 1, Some(1), minOneMessage = true).records.entries.asScala.toIndexedSeq)
+      assertEquals(Seq.empty, log.read(i, 1, Some(1), minOneMessage = true).records.records.asScala.toIndexedSeq)
     }
-
   }
 
   @Test
@@ -366,7 +429,7 @@ class LogTest extends JUnitSuite {
       assertEquals("Offsets not equal", offset, head.offset)
 
       val expected = messageSets(i).records.iterator.next()
-      val actual = head.iterator().next()
+      val actual = head.iterator.next()
       assertEquals(s"Keys not equal at offset $offset", expected.key, actual.key)
       assertEquals(s"Values not equal at offset $offset", expected.value, actual.value)
       assertEquals(s"Timestamps not equal at offset $offset", expected.timestamp, actual.timestamp)

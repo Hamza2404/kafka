@@ -164,7 +164,7 @@ public class MemoryRecordsTest {
             assertEquals(magic, shallowEntry.magic());
             assertEquals(compression, shallowEntry.compressionType());
             assertEquals(magic == Record.MAGIC_VALUE_V0 ? TimestampType.NO_TIMESTAMP_TYPE : TimestampType.CREATE_TIME,
-                    shallowEntry.record().timestampType());
+                    shallowEntry.timestampType());
         }
 
         List<LogRecord> records = TestUtils.toList(filteredRecords.records().iterator());

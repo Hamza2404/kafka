@@ -428,7 +428,7 @@ class GroupMetadataManager(val brokerId: Int,
                       loadedOffsets.put(key, value)
                       removedOffsets.remove(key)
                     }
-                } else {
+                  } else {
                     // load group metadata
                     val groupId = baseKey.key.asInstanceOf[String]
                     val groupMetadata = GroupMetadataManager.readGroupMessageValue(groupId, record.value)

@@ -229,7 +229,6 @@ public abstract class LogEntry implements Iterable<LogRecord> {
         return new SimpleLogEntry(offset, record);
     }
 
-
     private static class LogRecordShim implements LogRecord {
         private final LogEntry deepEntry;
 
