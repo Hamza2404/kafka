@@ -17,16 +17,16 @@ import org.apache.kafka.common.TopicPartition;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.kafka.clients.producer.Producer.INVALID_PID;
+import static org.apache.kafka.common.requests.InitPIDResponse.INVALID_PID;
 
 /**
  * A class which maintains state for transactions. Also keeps the state necessary to ensure idempotent production.
  */
 public class TransactionState {
     String appId;
-    private int pid;
+    private long pid;
     private short epoch;
-    Map<TopicPartition, Long> sequenceNumbers;
+    Map<TopicPartition, Integer> sequenceNumbers;
 
     public TransactionState(String appId) {
         this.appId = appId;
@@ -43,7 +43,7 @@ public class TransactionState {
         return pid() != INVALID_PID;
     }
 
-    public Integer pid() {
+    public Long pid() {
         return pid;
     }
 
@@ -51,7 +51,7 @@ public class TransactionState {
         return epoch;
     }
 
-    public synchronized void setPid(int pid) {
+    public synchronized void setPid(long pid) {
         if (this.pid == INVALID_PID) {
             this.pid = pid;
         }
@@ -66,19 +66,19 @@ public class TransactionState {
     /**
      * Returns the next sequence number to be written to the given TopicPartition.
      */
-    public Long sequenceNumber(TopicPartition topicPartition) {
+    public Integer sequenceNumber(TopicPartition topicPartition) {
         if (!sequenceNumbers.containsKey(topicPartition)) {
-            sequenceNumbers.put(topicPartition, 0L);
+            sequenceNumbers.put(topicPartition, 0);
         }
         return sequenceNumbers.get(topicPartition);
     }
 
 
-    public void incrementSequenceNumber(TopicPartition topicPartition, long increment) {
+    public void incrementSequenceNumber(TopicPartition topicPartition, int increment) {
         if (!sequenceNumbers.containsKey(topicPartition)) {
-            sequenceNumbers.put(topicPartition, 0L);
+            sequenceNumbers.put(topicPartition, 0);
         }
-        long currentSequenceNumber = sequenceNumbers.get(topicPartition);
+        int currentSequenceNumber = sequenceNumbers.get(topicPartition);
         currentSequenceNumber += increment;
         sequenceNumbers.put(topicPartition, currentSequenceNumber);
     }
